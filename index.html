@@ -2,44 +2,38 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>HTML 테트리스</title>
+<title>HTML Tetris</title>
 <style>
-  body {
-    background:#222;
-    color:#fff;
-    font-family:Arial, sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-  }
-  .container {
-    display:flex;
-    gap:20px;
-    position:relative;
-  }
-  canvas {
-    background:#000;
-    border:3px solid #555;
-  }
-  .panel {
-    width:160px;
-  }
-  h2 { margin:10px 0; font-size:18px; }
-  #gameOver {
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,0.85);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-    font-size:26px;
-  }
-  #gameOver small {
-    margin-top:10px;
-    font-size:14px;
-  }
+body{
+  background:#222;
+  color:#fff;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container{
+  display:flex;
+  gap:20px;
+  position:relative;
+}
+canvas{
+  background:#000;
+  border:3px solid #555;
+}
+.panel{width:160px;}
+#gameOver{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  font-size:26px;
+}
+#gameOver small{font-size:14px;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -48,71 +42,59 @@
   <canvas id="tetris" width="240" height="400"></canvas>
 
   <div class="panel">
-    <h2>다음 블록</h2>
+    <h3>Next</h3>
     <canvas id="next" width="80" height="80"></canvas>
-
-    <h2>점수</h2>
+    <h3>Score</h3>
     <div id="score">0</div>
-
-    <h2>랭킹</h2>
-    <ul id="ranking"></ul>
   </div>
 
   <div id="gameOver">
     <div>GAME OVER</div>
-    <small>Enter 키로 재시작</small>
+    <small>Enter to Restart</small>
   </div>
 </div>
 
 <script>
 /* ===== Canvas ===== */
-const canvas = document.getElementById("tetris");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("tetris");
+const ctx=canvas.getContext("2d");
 ctx.scale(20,20);
 
-const nextCanvas = document.getElementById("next");
-const nextCtx = nextCanvas.getContext("2d");
+const nextCanvas=document.getElementById("next");
+const nextCtx=nextCanvas.getContext("2d");
 nextCtx.scale(20,20);
 
-/* ===== UI ===== */
-const scoreEl = document.getElementById("score");
-const rankingEl = document.getElementById("ranking");
-const gameOverEl = document.getElementById("gameOver");
+const scoreEl=document.getElementById("score");
+const gameOverEl=document.getElementById("gameOver");
 
-/* ===== Data ===== */
-const colors = [
-  null,
+const colors=[null,
   "#FF0D72","#0DC2FF","#0DFF72",
   "#F538FF","#FF8E0D","#FFE138","#3877FF"
 ];
 
-function createMatrix(w,h){
-  return Array.from({length:h},()=>Array(w).fill(0));
-}
+/* ===== Utils ===== */
+const createMatrix=(w,h)=>Array.from({length:h},()=>Array(w).fill(0));
 
-function createPiece(type){
-  switch(type){
-    case "T": return [[0,1,0],[1,1,1],[0,0,0]];
-    case "O": return [[2,2],[2,2]];
-    case "L": return [[0,0,3],[3,3,3],[0,0,0]];
-    case "J": return [[4,0,0],[4,4,4],[0,0,0]];
-    case "I": return [[0,0,0,0],[5,5,5,5],[0,0,0,0],[0,0,0,0]];
-    case "S": return [[0,6,6],[6,6,0],[0,0,0]];
-    case "Z": return [[7,7,0],[0,7,7],[0,0,0]];
+const createPiece=t=>{
+  switch(t){
+    case "T":return[[0,1,0],[1,1,1],[0,0,0]];
+    case "O":return[[2,2],[2,2]];
+    case "L":return[[0,0,3],[3,3,3],[0,0,0]];
+    case "J":return[[4,0,0],[4,4,4],[0,0,0]];
+    case "I":return[[0,0,0,0],[5,5,5,5],[0,0,0,0],[0,0,0,0]];
+    case "S":return[[0,6,6],[6,6,0],[0,0,0]];
+    case "Z":return[[7,7,0],[0,7,7],[0,0,0]];
   }
-}
+};
 
-function randomPiece(){
-  const pieces="TJLOSZI";
-  return createPiece(pieces[Math.random()*pieces.length|0]);
-}
+const randomPiece=()=>createPiece("TJLOSZI"[Math.random()*7|0]);
 
 /* ===== Draw ===== */
-function drawMatrix(matrix, offset, context){
+function drawMatrix(matrix,offset,context){
   matrix.forEach((row,y)=>{
-    row.forEach((value,x)=>{
-      if(value){
-        context.fillStyle=colors[value];
+    row.forEach((v,x)=>{
+      if(v){
+        context.fillStyle=colors[v];
         context.fillRect(x+offset.x,y+offset.y,1,1);
       }
     });
@@ -125,50 +107,51 @@ function drawNext(){
 }
 
 /* ===== Collision ===== */
-function collide(arena, player){
+function collide(arena,player){
   return player.matrix.some((row,y)=>
-    row.some((value,x)=>
-      value && (arena[y+player.pos.y]?.[x+player.pos.x]) !== 0
+    row.some((v,x)=>
+      v && (arena[y+player.pos.y]?.[x+player.pos.x])!==0
     )
   );
 }
 
-function merge(arena, player){
+function merge(arena,player){
   player.matrix.forEach((row,y)=>{
-    row.forEach((value,x)=>{
-      if(value){
-        arena[y+player.pos.y][x+player.pos.x]=value;
-      }
+    row.forEach((v,x)=>{
+      if(v) arena[y+player.pos.y][x+player.pos.x]=v;
     });
   });
 }
 
-/* ===== Player Controls ===== */
+/* ===== Player Actions ===== */
 function playerMove(dir){
   player.pos.x+=dir;
-  if(collide(arena,player)){
-    player.pos.x-=dir;
-  }
+  if(collide(arena,player)) player.pos.x-=dir;
 }
 
 function playerDrop(){
   player.pos.y++;
   if(collide(arena,player)){
     player.pos.y--;
-    merge(arena,player);
-    arenaSweep();
-    updateScore();
-    nextTurn();
+    lockPiece();
   }
 }
 
-function rotate(matrix){
-  for(let y=0;y<matrix.length;y++){
+function hardDrop(){
+  while(!collide(arena,player)){
+    player.pos.y++;
+  }
+  player.pos.y--;
+  lockPiece();
+}
+
+function rotate(m){
+  for(let y=0;y<m.length;y++){
     for(let x=0;x<y;x++){
-      [matrix[x][y],matrix[y][x]]=[matrix[y][x],matrix[x][y]];
+      [m[x][y],m[y][x]]=[m[y][x],m[x][y]];
     }
   }
-  matrix.forEach(row=>row.reverse());
+  m.forEach(r=>r.reverse());
 }
 
 function playerRotate(){
@@ -188,7 +171,7 @@ function playerRotate(){
   }
 }
 
-/* ===== Arena ===== */
+/* ===== Game Flow ===== */
 function arenaSweep(){
   for(let y=arena.length-1;y>=0;y--){
     if(arena[y].every(v=>v)){
@@ -199,7 +182,13 @@ function arenaSweep(){
   }
 }
 
-/* ===== Game Flow ===== */
+function lockPiece(){
+  merge(arena,player);
+  arenaSweep();
+  updateScore();
+  nextTurn();
+}
+
 function nextTurn(){
   player.matrix=next.matrix;
   next.matrix=randomPiece();
@@ -214,13 +203,11 @@ function updateScore(){
 
 function gameOver(){
   gameRunning=false;
-  saveScore(player.score);
-  updateRanking();
   gameOverEl.style.display="flex";
 }
 
 function resetGame(){
-  arena.forEach(row=>row.fill(0));
+  arena.forEach(r=>r.fill(0));
   player.score=0;
   updateScore();
   player.matrix=randomPiece();
@@ -231,45 +218,27 @@ function resetGame(){
   gameOverEl.style.display="none";
 }
 
-/* ===== Ranking ===== */
-function loadRanking(){
-  return JSON.parse(localStorage.getItem("tetris-rank")||"[]");
-}
-function saveScore(score){
-  const list=loadRanking();
-  list.push(score);
-  list.sort((a,b)=>b-a);
-  localStorage.setItem("tetris-rank",JSON.stringify(list.slice(0,5)));
-}
-function updateRanking(){
-  rankingEl.innerHTML="";
-  loadRanking().forEach(s=>{
-    const li=document.createElement("li");
-    li.textContent=s;
-    rankingEl.appendChild(li);
-  });
-}
-
 /* ===== Init ===== */
 const arena=createMatrix(12,20);
 const player={pos:{x:4,y:0},matrix:randomPiece(),score:0};
 const next={matrix:randomPiece()};
 let dropCounter=0, dropInterval=1000, lastTime=0;
 let gameRunning=true;
-
-updateRanking();
 drawNext();
 
-/* ===== Loop ===== */
+/* ===== Loop (항상 실행) ===== */
 function update(time=0){
-  if(!gameRunning) return;
   const delta=time-lastTime;
   lastTime=time;
-  dropCounter+=delta;
-  if(dropCounter>dropInterval){
-    playerDrop();
-    dropCounter=0;
+
+  if(gameRunning){
+    dropCounter+=delta;
+    if(dropCounter>dropInterval){
+      playerDrop();
+      dropCounter=0;
+    }
   }
+
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawMatrix(arena,{x:0,y:0},ctx);
   drawMatrix(player.matrix,player.pos,ctx);
@@ -279,13 +248,17 @@ update();
 
 /* ===== Input ===== */
 document.addEventListener("keydown",e=>{
-  if(!gameRunning && e.key==="Enter") resetGame();
+  if(!gameRunning && e.key==="Enter"){
+    resetGame();
+    return;
+  }
   if(!gameRunning) return;
 
   if(e.key==="ArrowLeft") playerMove(-1);
   else if(e.key==="ArrowRight") playerMove(1);
   else if(e.key==="ArrowDown") playerDrop();
   else if(e.key==="ArrowUp") playerRotate();
+  else if(e.code==="Space") hardDrop();
 });
 </script>
 </body>
